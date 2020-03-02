@@ -1,0 +1,74 @@
+---
+# tasks file for unifi
+- name: Add Ubiquiti repository
+  lineinfile:
+    path: /etc/apt/sources.list
+    line: "deb http://www.ubnt.com/downloads/unifi/debian stable ubiquiti"
+
+- name: Add Ubiquiti GPG Key
+  get_url:
+    url: https://dl.ui.com/unifi/unifi-repo.gpg
+    dest: /etc/apt/trusted.gpg.d/unifi-repo.gpg
+    mode: '0644'
+
+- name: Add MongoDB GPG Key
+  shell: |
+    wget -qO - https://www.mongodb.org/static/pgp/server-3.4.asc | sudo apt-key add -
+
+- name: Create MongoDB repository
+  file:
+    path: /etc/apt/sources.list.d/mongodb-org-3.4.list
+    state: touch
+
+- name: Add MongoDB repository
+  lineinfile:
+    path: /etc/apt/sources.list.d/mongodb-org-3.4.list
+    line: "deb https://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.4 multiverse"
+
+- name: install openjdk 8
+  apt:
+    name: openjdk-8-jre-headless
+    update_cache: yes
+    state: latest
+
+- name: Update repository and install unifi
+  apt:
+    name: unifi
+    update_cache: yes
+    state: latest
+
+- name: Port used for STUN
+  ufw:
+    rule: allow
+    proto: udp
+    port: '3478'
+
+- name: Port used for device and controller communication
+  ufw:
+    rule: allow
+    proto: tcp
+    port: '8080'
+
+- name: Port used for controller GUI/API as seen in a web browser
+  ufw:
+    rule: allow
+    proto: tcp
+    port: '8443'
+
+- name: Port used for HTTP portal redirection
+  ufw:
+    rule: allow
+    proto: tcp
+    port: '8880'
+
+- name: Port used for HTTPS portal redirection
+  ufw:
+    rule: allow
+    proto: tcp
+    port: '8843'
+
+- name: Port used for UniFi mobile speed test.
+  ufw:
+    rule: allow
+    proto: tcp
+    port: '6789'
