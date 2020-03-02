@@ -1,0 +1,4 @@
+export ACME_EMAIL=
+export CLOUDFLARE_EMAIL=
+export CLOUDFLARE_TOKEN=
+export DOMAIN_NAME=
