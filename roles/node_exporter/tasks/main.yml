@@ -30,12 +30,8 @@
     repo: "https://github.com/prometheus-community/node-exporter-textfile-collector-scripts.git"
     dest: "/home/{{ prometheus_user }}/{{ prometheus_folder }}/{{ prometheus_node_exporter_scripts_folder }}/"
     accept_hostkey: yes
+    force: yes
   tags: node_exporter
-
-- name: Forked version of smartmon.sh
-  get_url:
-    url: https://raw.githubusercontent.com/janw/node-exporter-textfile-collector-scripts/master/smartmon.sh
-    dest: "/home/{{ prometheus_user }}/{{ prometheus_folder }}/{{ prometheus_node_exporter_scripts_folder }}/smartmon.sh"
 
 - name: setup cron for smartmon.sh
   ansible.builtin.cron:
