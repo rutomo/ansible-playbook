@@ -1,0 +1,9 @@
+---
+# vars file for zfs
+
+rhel_7_latest_minor_version: 8
+rhel_8_latest_minor_version: 2
+
+zpool_name: tank
+zpool_config: mirror
+zvol_directory: data

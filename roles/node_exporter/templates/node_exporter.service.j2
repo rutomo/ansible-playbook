@@ -1,0 +1,9 @@
+[Unit]
+Description=Node Exporter
+
+[Service]
+User={{ prometheus_user }}
+ExecStart=/home/{{ prometheus_user }}/{{ prometheus_folder }}/{{ prometheus_node_exporter_folder }}/node_exporter --collector.textfile.directory=/home/{{ prometheus_user }}/{{ prometheus_folder }}/{{ prometheus_node_exporter_textfile_folder }}
+
+[Install]
+WantedBy=default.target
