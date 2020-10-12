@@ -4,4 +4,4 @@
     gather_facts: yes
     roles:
       - baseline
-      - node_exporter
+      - monitoring

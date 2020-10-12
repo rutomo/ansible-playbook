@@ -33,6 +33,9 @@
     - gnupg-agent
     - software-properties-common
     - python3
+    - python3-pip
+    - python-pip
+    - python-setuptools
   when: ansible_facts['os_family'] == "Debian"
 
 - name: Reject everything and enable UFW
@@ -54,10 +57,16 @@
     name: "*"
   when: ansible_facts['os_family'] == "RedHat"
 
+- name: Enable epel repo (RedHat)
+  yum:
+    state: latest
+    name: ['epel-release']
+  when: ansible_facts['os_family'] == "RedHat"
+
 - name: Install baseline packages (RedHat)
   yum:
     state: latest
-    name: ['rsync','smartmontools','yum-utils','git','python3']
+    name: ['rsync','smartmontools','yum-utils','git','python3','python3-pip','python-setuptools','python-pip']
   when: ansible_facts['os_family'] == "RedHat"
 
 - name: Enable and start smartD
@@ -99,3 +108,7 @@
     state: started
     enabled: yes
   tags: docker
+
+- name: Install docker python package
+  pip:
+    name: ['docker']

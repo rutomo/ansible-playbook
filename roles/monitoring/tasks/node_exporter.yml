@@ -1,5 +1,5 @@
 ---
-# tasks file for node_exporter
+# tasks file for monitoring
 
 - name: Create prometheus user
   user:

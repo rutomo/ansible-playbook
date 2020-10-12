@@ -1,0 +1,12 @@
+---
+  # vars file for node_exporter
+  prometheus_node_exporter_version: 1.0.1
+  prometheus_user: prometheus
+  prometheus_folder: Prometheus
+  prometheus_node_exporter_folder: node_exporter
+  prometheus_node_exporter_textfile_folder: textfile
+  prometheus_node_exporter_scripts_folder: scripts
+
+  host_devices:
+    - { device: "/dev/sda", type: "sat" }
+
