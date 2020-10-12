@@ -1,0 +1,34 @@
+---
+- hosts: backup.utomo.ca
+  become: yes
+  gather_facts: yes
+  roles:
+    - zfs
+  tasks:
+    - name: Update and patch NFS client + rsync (RedHat)
+      yum:
+        state: latest
+        name: ['nfs-utils','libstoragemgmt-nfs-plugin','rsync','smartmontools','yum-utils','git']
+      when: ansible_facts['os_family'] == "RedHat"
+
+    - name: Create NFS mount folder
+      file:
+        state: directory
+        path: /mnt/nfs/yuuki-shared
+
+    - name: Mount NFS
+      mount:
+        path: /mnt/nfs/yuuki-shared
+        src: 192.168.1.90:/var/shared
+        state: mounted
+        opts: defaults,nfsvers=3
+        fstype: nfs
+        boot: yes
+
+    - name: setup cron for smartmon.sh
+      cron:
+        minute: "*/5"
+        state: present
+        name: "Node Exporter Collector script for Smart Monitoring Bash Script"
+        job: "/home/{{ prometheus_user }}/{{ prometheus_folder }}/{{ prometheus_node_exporter_scripts_folder }}/smartmon.sh > /home/{{ prometheus_user }}/{{ prometheus_folder }}/{{ prometheus_node_exporter_textfile_folder }}/smartmon.prom.$$ && mv /home/{{ prometheus_user }}/{{ prometheus_folder }}/{{ prometheus_node_exporter_textfile_folder }}/smartmon.prom.$$ /home/{{ prometheus_user }}/{{ prometheus_folder }}/{{ prometheus_node_exporter_textfile_folder }}/smartmon.prom"
+      tags: node_exporter
