@@ -1,0 +1,7 @@
+---
+- name: Enable port 9100 for prometheus
+  firewalld:
+    port: 9100/tcp
+    state: enabled
+    permanent: yes
+    immediate: yes

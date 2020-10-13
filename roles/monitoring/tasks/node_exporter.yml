@@ -7,19 +7,16 @@
     state: present
     shell: /sbin/nologin
     system: yes
-  tags: node_exporter
 
 - name: Download Node Exporter
   get_url:
     url: "https://github.com/prometheus/node_exporter/releases/download/v{{ prometheus_node_exporter_version }}/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz"
     dest: /tmp/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz
-  tags: node_exporter
 
 - name: Setup Prometheus and node_exporter directory
   file:
     path: "{{ item }}"
     state: directory
-  tags: node_exporter
   loop:
     - "/home/{{ prometheus_user }}/{{ prometheus_folder }}/{{ prometheus_node_exporter_folder }}"
     - "/home/{{ prometheus_user }}/{{ prometheus_folder }}/{{ prometheus_node_exporter_textfile_folder }}"
@@ -31,7 +28,6 @@
     dest: "/home/{{ prometheus_user }}/{{ prometheus_folder }}/{{ prometheus_node_exporter_scripts_folder }}/"
     accept_hostkey: yes
     force: yes
-  tags: node_exporter
 
 - name: setup cron for smartmon.sh
   ansible.builtin.cron:
@@ -39,7 +35,6 @@
     state: present
     name: "Node Exporter Collector script for Smart Monitoring Bash Script"
     job: "/home/{{ prometheus_user }}/{{ prometheus_folder }}/{{ prometheus_node_exporter_scripts_folder }}/smartmon.sh > /home/{{ prometheus_user }}/{{ prometheus_folder }}/{{ prometheus_node_exporter_textfile_folder }}/smartmon.prom.$$ && mv /home/{{ prometheus_user }}/{{ prometheus_folder }}/{{ prometheus_node_exporter_textfile_folder }}/smartmon.prom.$$ /home/{{ prometheus_user }}/{{ prometheus_folder }}/{{ prometheus_node_exporter_textfile_folder }}/smartmon.prom"
-  tags: node_exporter
 
 - name: setup cron for smartmon.py
   ansible.builtin.cron:
@@ -47,7 +42,6 @@
     state: present
     name: "Node Exporter Collector script for Smart Monitoring Python Script"
     job: "/usr/bin/python3 /home/{{ prometheus_user }}/{{ prometheus_folder }}/{{ prometheus_node_exporter_scripts_folder }}/smartmon.py > /home/{{ prometheus_user }}/{{ prometheus_folder }}/{{ prometheus_node_exporter_textfile_folder }}/smartmon-python.prom.$$ && mv /home/{{ prometheus_user }}/{{ prometheus_folder }}/{{ prometheus_node_exporter_textfile_folder }}/smartmon-python.prom.$$ /home/{{ prometheus_user }}/{{ prometheus_folder }}/{{ prometheus_node_exporter_textfile_folder }}/smartmon-python.prom"
-  tags: node_exporter
 
 - name: Extract tar.gz
   unarchive:
@@ -56,14 +50,12 @@
     dest: "/home/{{ prometheus_user }}/{{ prometheus_folder }}/{{ prometheus_node_exporter_folder }}"
     owner: "{{ prometheus_user }}"
     group: "{{ prometheus_user }}"
-  tags: node_exporter
 
 - name: symlink node_exporter to a specific version
   file:
     path: "/home/{{ prometheus_user }}/{{ prometheus_folder }}/{{ prometheus_node_exporter_folder }}/node_exporter"
     src: "/home/{{ prometheus_user }}/{{ prometheus_folder }}/{{ prometheus_node_exporter_folder }}/node_exporter-1.0.1.linux-amd64/node_exporter"
     state: link
-  tags: node_exporter
   notify:
     - restart node_exporter
 
@@ -72,7 +64,6 @@
     src: node_exporter.service.j2
     dest: /etc/systemd/system/node_exporter.service
     mode: 600
-  tags: node_exporter
   notify:
     - reload daemon
     - restart node_exporter
@@ -82,20 +73,6 @@
     name: node_exporter.service
     enabled: yes
     state: started
-  tags: node_exporter
 
-- name: Enable port 9100 for prometheus
-  firewalld:
-    port: 9100/tcp
-    state: enabled
-    permanent: yes
-    immediate: yes
-  when: ansible_facts['os_family'] == "RedHat"
-  tags: node_exporter
-
-- name: Allow port 9100 for prometheus
-  ufw:
-    rule: allow
-    port: "9100"
-    proto: "tcp"
-  when: ansible_facts['os_family'] == "Debian"
+- name: Include OS specific tasks
+  include: "{{ ansible_facts['os_family'] | lower }}.yml"

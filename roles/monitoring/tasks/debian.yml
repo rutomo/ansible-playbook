@@ -1,0 +1,6 @@
+---
+- name: Allow port 9100 for prometheus
+  ufw:
+    rule: allow
+    port: "9100"
+    proto: "tcp"
