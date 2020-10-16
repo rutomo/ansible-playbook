@@ -25,10 +25,3 @@
         fstype: nfs
         boot: yes
 
-    - name: setup cron for smartmon.sh
-      cron:
-        minute: "*/5"
-        state: present
-        name: "Node Exporter Collector script for Smart Monitoring Bash Script"
-        job: "/home/{{ prometheus_user }}/{{ prometheus_folder }}/{{ prometheus_node_exporter_scripts_folder }}/smartmon.sh > /home/{{ prometheus_user }}/{{ prometheus_folder }}/{{ prometheus_node_exporter_textfile_folder }}/smartmon.prom.$$ && mv /home/{{ prometheus_user }}/{{ prometheus_folder }}/{{ prometheus_node_exporter_textfile_folder }}/smartmon.prom.$$ /home/{{ prometheus_user }}/{{ prometheus_folder }}/{{ prometheus_node_exporter_textfile_folder }}/smartmon.prom"
-      tags: node_exporter
