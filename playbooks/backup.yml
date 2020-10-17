@@ -25,3 +25,10 @@
         fstype: nfs
         boot: yes
 
+    - name: setup cron backup rsync
+      ansible.builtin.cron:
+        minute: "*"
+        hour: "1"
+        state: present
+        name: "Rsync backup script"
+        job: "/bin/rsync -avr {{ backup.source }} {{ backup.destination }}"

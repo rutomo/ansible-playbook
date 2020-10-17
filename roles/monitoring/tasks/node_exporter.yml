@@ -29,6 +29,16 @@
     accept_hostkey: yes
     force: yes
 
+- name: Check which bin for smartctl
+  command: which smartctl
+  register: smartctl
+
+- name: Replace smartctl command with absolute path
+  replace:
+    path: "/home/{{ prometheus_user }}/{{ prometheus_folder }}/{{ prometheus_node_exporter_scripts_folder }}/smartmon.py"
+    regexp: '''smartctl'''
+    replace: "'{{ smartctl.stdout }}'"
+
 - name: setup cron for smartmon.sh
   ansible.builtin.cron:
     minute: "*/5"
