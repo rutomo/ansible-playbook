@@ -32,3 +32,11 @@
         state: present
         name: "Rsync backup script"
         job: "/bin/rsync -avr {{ backup.source }} {{ backup.destination }}"
+
+    - name: setup zfs snapshot for zfs pool
+      ansible.builtin.cron:
+        minute: "*"
+        hour: "23"
+        state: present
+        name: "Setup zfs snapshot for zfs pool"
+        job: "/sbin/zfs snapshot {{ zfs.pool_name }}@$(date +\"%m-%d-%Y\")"
