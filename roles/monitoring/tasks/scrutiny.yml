@@ -1,0 +1,24 @@
+---
+- name: Scrutiny config directory
+  file:
+    path: "/scrutiny/config"
+    state: directory
+- name: Scrutiny collector config
+  template:
+    src: scrutiny-collector.yaml.j2
+    dest: /scrutiny/config/collector.yaml
+    mode: 600
+- name: Install Scrutiny collector docker
+  docker_container:
+    name: scrutiny-collector
+    image: analogj/scrutiny:collector
+    state: started
+    privileged: yes
+    devices: "{{ host_devices }}"
+    env:
+      SCRUTINY_API_ENDPOINT: "{{ scrutiny_api_endpoint }}"
+    capabilities:
+      - SYS_RAWIO
+    volumes:
+      - "/run/udev:/run/udev:ro"
+      - "/scrutiny/config:/scrutiny/config:ro"

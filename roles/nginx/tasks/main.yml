@@ -42,13 +42,6 @@
   tags:
     - nginx
 
-- name: Restart Nginx
-  service:
-    name: nginx
-    state: restarted
-  tags:
-    - nginx
-
 - name: Allow HTTP
   ufw:
     rule: allow

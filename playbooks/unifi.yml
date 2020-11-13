@@ -1,8 +1,7 @@
 ---
-- hosts: unifi
-  remote_user: ansible
+- hosts: unifi.utomo.ca
   become: yes
-  gather_facts: no
+  gather_facts: yes
   vars:
     acme_challenge_type: dns-01
     acme_directory: https://acme-v02.api.letsencrypt.org/directory
@@ -16,8 +15,8 @@
     cloudflare_email: "{{ lookup('env','CLOUDFLARE_EMAIL') }}"
     cloudflare_token: "{{ lookup('env','CLOUDFLARE_TOKEN') }}"
     domain_name: "{{ lookup('env','DOMAIN_NAME') }}"
+    domain_zone_name: "{{ lookup('env','DOMAIN_ZONE_NAME') }}"
   roles:
-    - baseline
     - unifi
     - letsencrypt
     - nginx

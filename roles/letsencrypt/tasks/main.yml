@@ -20,17 +20,29 @@
   tags:
     - letsencrypt
 
+- name: Check that the private key exists
+  stat:
+    path: /etc/letsencrypt/keys/{{ domain_name }}.key
+  register: priv_key
+
 - name: "Generate Let's Encrypt private key"
   shell: "openssl genrsa 4096 | sudo tee /etc/letsencrypt/keys/{{ domain_name }}.key"
   tags:
     - letsencrypt
+  when: not priv_key.stat.exists
+
+- name: Check that the csr exists
+  stat:
+    path: /etc/letsencrypt/csrs/{{ domain_name }}.csr
+  register: csr
 
 - name: "Generate Let's Encrypt CSR"
-  shell: "openssl req -new -sha256 -key /etc/letsencrypt/keys/{{ domain_name }}.key -subj \"/CN={{ domain_name }}\" -reqexts SAN -config <(cat /etc/ssl/openssl.cnf <(printf \"\n[SAN]\nsubjectAltName=DNS:*.{{ domain_name }}\")) | sudo tee /etc/letsencrypt/csrs/{{ domain_name }}.csr"
+  shell: "openssl req -new -sha256 -key /etc/letsencrypt/keys/{{ domain_name }}.key -subj \"/CN={{ domain_name }}\" -reqexts SAN -config <(cat /etc/ssl/openssl.cnf <(printf \"\n[SAN]\nsubjectAltName=DNS:{{ domain_name }}\")) | sudo tee /etc/letsencrypt/csrs/{{ domain_name }}.csr"
   args:
     executable: /bin/bash
   tags:
     - letsencrypt
+  when: not csr.stat.exists
 
 - name: "Begin Let's Encrypt challenges"
   acme_certificate:
@@ -44,27 +56,13 @@
     cert: "{{ letsencrypt_certs_dir }}/{{ domain_name }}.crt"
     chain: "{{ letsencrypt_certs_dir }}/chain_{{ domain_name }}.crt"
     fullchain: "{{ letsencrypt_certs_dir }}/fullchain_{{ domain_name }}.crt"
-    remaining_days: 30
   register: acme_challenge_your_domain
   tags:
     - letsencrypt
 
 - name: "Create TXT record"
   cloudflare_dns:
-    zone: "{{ domain_name }}"
-    record: "{{ acme_challenge_your_domain.challenge_data[('*.'+domain_name)]['dns-01'].record }}"
-    type: TXT
-    state: present
-    value: "{{ acme_challenge_your_domain.challenge_data[('*.'+domain_name)]['dns-01'].resource_value }}"
-    account_email: "{{ cloudflare_email }}"
-    account_api_token: "{{ cloudflare_token }}"
-  when: acme_challenge_your_domain is changed
-  tags:
-    - letsencrypt
-
-- name: "Create TXT record"
-  cloudflare_dns:
-    zone: "{{ domain_name }}"
+    zone: "{{ domain_zone_name }}"
     record: "{{ acme_challenge_your_domain.challenge_data[domain_name]['dns-01'].record }}"
     type: TXT
     state: present
@@ -93,19 +91,7 @@
 
 - name: "Delete TXT record"
   cloudflare_dns:
-    zone: "{{ domain_name }}"
-    record: "{{ acme_challenge_your_domain.challenge_data[('*.'+domain_name)]['dns-01'].record }}"
-    type: TXT
-    state: absent
-    value: "{{ acme_challenge_your_domain.challenge_data[('*.'+domain_name)]['dns-01'].resource_value }}"
-    account_email: "{{ cloudflare_email }}"
-    account_api_token: "{{ cloudflare_token }}"
-  when: acme_challenge_your_domain is changed
-  tags:
-    - letsencrypt
-- name: "Delete TXT record"
-  cloudflare_dns:
-    zone: "{{ domain_name }}"
+    zone: "{{ domain_zone_name }}"
     record: "{{ acme_challenge_your_domain.challenge_data[domain_name]['dns-01'].record }}"
     type: TXT
     state: absent

@@ -1,0 +1,42 @@
+---
+- hosts: backup.utomo.ca
+  become: yes
+  gather_facts: yes
+  roles:
+    - zfs
+  tasks:
+    - name: Update and patch NFS client + rsync (RedHat)
+      yum:
+        state: latest
+        name: ['nfs-utils','libstoragemgmt-nfs-plugin','rsync','smartmontools','yum-utils','git']
+      when: ansible_facts['os_family'] == "RedHat"
+
+    - name: Create NFS mount folder
+      file:
+        state: directory
+        path: /mnt/nfs/yuuki-shared
+
+    - name: Mount NFS
+      mount:
+        path: /mnt/nfs/yuuki-shared
+        src: 192.168.1.90:/var/shared
+        state: mounted
+        opts: defaults,nfsvers=3
+        fstype: nfs
+        boot: yes
+
+    - name: setup cron backup rsync
+      ansible.builtin.cron:
+        minute: "*"
+        hour: "1"
+        state: present
+        name: "Rsync backup script"
+        job: "/bin/rsync -avr {{ backup.source }} {{ backup.destination }}"
+
+    - name: setup zfs snapshot for zfs pool
+      ansible.builtin.cron:
+        minute: "*"
+        hour: "23"
+        state: absent
+        name: "Setup zfs snapshot for zfs pool"
+        job: "/sbin/zfs snapshot {{ zfs.pool_name }}@$(/bin/date +\"%m-%d-%Y\")"

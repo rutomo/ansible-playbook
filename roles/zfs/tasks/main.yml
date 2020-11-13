@@ -1,0 +1,55 @@
+---
+# tasks file for zfs
+
+- name: Add ZFS on Linux repo for RHEL 6
+  yum:
+    state: latest
+    name: "http://download.zfsonlinux.org/epel/zfs-release.el{{ ansible_facts['distribution_major_version'] }}.noarch.rpm"
+  when:
+    - ansible_facts['os_family'] == "RedHat"
+    - ansible_facts['distribution_major_version'] == "6"
+
+- name: Add ZFS on Linux repo for RHEL 7
+  yum:
+    state: latest
+    name: "http://download.zfsonlinux.org/epel/zfs-release.el{{ ansible_facts['distribution_major_version'] }}_{{ rhel_7_latest_minor_version }}.noarch.rpm"
+  when:
+    - ansible_facts['os_family'] == "RedHat"
+    - ansible_facts['distribution_major_version'] == "7"
+
+- name: Add ZFS on Linux repo for RHEL 8
+  yum:
+    state: latest
+    name: "http://download.zfsonlinux.org/epel/zfs-release.el{{ ansible_facts['distribution_major_version'] }}_{{ rhel_8_latest_minor_version }}.noarch.rpm"
+  when:
+    - ansible_facts['os_family'] == "RedHat"
+    - ansible_facts['distribution_major_version'] == "8"
+
+- name: Disable ZFS on Linux DKMS repo (https://openzfs.github.io/openzfs-docs/Getting%20Started/RHEL%20and%20CentOS.html#dkms)
+  yum_repository:
+    name: zfs
+    enabled: no
+    state: present
+    description: ZFS on Linux DKMS repo (https://openzfs.github.io/openzfs-docs/Getting%20Started/RHEL%20and%20CentOS.html#dkms)
+    baseurl: http://download.zfsonlinux.org/epel/{{ ansible_facts['distribution_major_version'] }}.{{ rhel_7_latest_minor_version }}/$basearch/
+  when:
+    - ansible_facts['os_family'] == "RedHat"
+
+- name: Enable ZFS on Linux kABI-tracking kmods repo (https://openzfs.github.io/openzfs-docs/Getting%20Started/RHEL%20and%20CentOS.html#kabi-tracking-kmod)
+  yum_repository:
+    name: zfs-kmod
+    enabled: yes
+    state: present
+    description: ZFS on Linux kABI-tracking kmods repo (https://openzfs.github.io/openzfs-docs/Getting%20Started/RHEL%20and%20CentOS.html#kabi-tracking-kmod)
+    baseurl: http://download.zfsonlinux.org/epel/{{ ansible_facts['distribution_major_version'] }}.{{ rhel_7_latest_minor_version }}/kmod/$basearch/
+  when:
+    - ansible_facts['os_family'] == "RedHat"
+
+- name: Install ZFS (RedHat)
+  yum:
+    state: latest
+    name: zfs-0.8.4-1.el{{ ansible_facts['distribution_major_version'] }}
+    bugfix: yes
+    security: yes
+    update_cache: yes
+  when: ansible_facts['os_family'] == "RedHat"

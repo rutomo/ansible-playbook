@@ -4,3 +4,4 @@
 *.swp
 *.swo
 inventory
+.vault_file_password
